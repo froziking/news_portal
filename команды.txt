@@ -1,0 +1,56 @@
+# Импортируем необходимые модели
+from django.contrib.auth.models import User
+from Models.models import Author, Category, Post, Comment
+
+# 1. Создание двух пользователей
+user1 = User.objects.create_user('user1', password='password1')
+user2 = User.objects.create_user('user2', password='password2')
+
+# 2. Создание двух объектов модели Author, связанных с пользователями
+author1 = Author.objects.create(user=user1)
+author2 = Author.objects.create(user=user2)
+
+# 3. Добавление 4 категорий в модель Category
+category1 = Category.objects.create(name_category='Категория 1')
+category2 = Category.objects.create(name_category='Категория 2')
+category3 = Category.objects.create(name_category='Категория 3')
+category4 = Category.objects.create(name_category='Категория 4')
+
+# 4. Добавление 2 статей и 1 новости
+post1 = Post.objects.create(author=author1, choice=Post.article, heading='Статья 1', text='Содержимое статьи 1')
+post2 = Post.objects.create(author=author2, choice=Post.article, heading='Статья 2', text='Содержимое статьи 2')
+news1 = Post.objects.create(author=author1, choice=Post.news, heading='Новость 1', text='Содержимое новости 1')
+
+# 5. Присвоение категорий статьям/новостям
+post1.category.add(category1, category2)  # Статья 1 имеет 2 категории
+post2.category.add(category3)              # Статья 2 имеет 1 категорию
+news1.category.add(category4)               # Новость 1 имеет 1 категорию
+
+# 6. Создание как минимум 4 комментариев к разным объектам модели Post
+comment1 = Comment.objects.create(post=post1, user=user1, text_com='Комментарий к статье 1')
+comment2 = Comment.objects.create(post=post1, user=user2, text_com='Еще один комментарий к статье 1')
+comment3 = Comment.objects.create(post=post2, user=user1, text_com='Комментарий к статье 2')
+comment4 = Comment.objects.create(post=news1, user=user2, text_com='Комментарий к новости 1')
+
+# 7. Корректировка рейтингов с помощью функций like() и dislike()
+post1.like()  # Лайк к статье 1
+post2.dislike()  # Дизлайк к статье 2
+comment1.like()  # Лайк к комментарию 1
+comment3.dislike()  # Дизлайк к комментарию 3
+
+# 8. Обновление рейтингов пользователей
+author1.update_rating()
+author2.update_rating()
+
+# 9. Вывод username и рейтинга лучшего пользователя
+best_author = Author.objects.order_by('-rating').first()
+print(best_author.user.username, best_author.rating)
+
+# 10. Вывод даты добавления, username автора, рейтинга, заголовка и превью лучшей статьи
+best_post = Post.objects.order_by('-rating').first()
+print(best_post.datatime_in, best_post.author.user.username, best_post.rating, best_post.heading, best_post.preview())
+
+# 11. Вывод всех комментариев к этой статье
+comments = Comment.objects.filter(post=best_post)
+for comment in comments:
+    print(comment.datetime_in, comment.user.username, comment.rating, comment.text_com)
