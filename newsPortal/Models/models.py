@@ -45,6 +45,9 @@ class Post(models.Model):
     text = models.TextField()
     rating = models.IntegerField(default=0)
 
+    def __str__(self):
+        return f'{self.heading}: {self.text[:30]}'
+
     def like(self):
         self.rating += 1
         self.save()
